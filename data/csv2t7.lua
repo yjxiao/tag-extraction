@@ -139,13 +139,21 @@ for line in fd:lines() do
       io.flush()
       collectgarbage()
    end
+
+   if math.fmod(n, 3100000) == 0 then
+      torch.save(config.output..'input_text1.t7', text)
+      text = nil
+      collectgarbage()
+      test = {}
+   end
+   
    ::continue::
 end
 fd:close()
 collectgarbage()
 print("\rNumber of lines processed: "..n)
 
-torch.save(config.output..'input_text.t7', text)
+torch.save(config.output..'input_text2.t7', text)
 text = nil
 collectgarbage()
 torch.save(config.output..'labels.t7', label)
