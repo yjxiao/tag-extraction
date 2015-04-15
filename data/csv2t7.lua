@@ -174,7 +174,6 @@ end
 fd:close()
 collectgarbage()
 print("\rNumber of lines processed: "..n)
-
 print("Saving to "..config.output)
 torch.save(config.output, data)
 print("Processing done")
