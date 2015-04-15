@@ -13,7 +13,7 @@ require("torch")
 -- Configuration table
 config = {}
 config.input = "train.csv"
-config.output = "train.t7b"
+config.output = "./"
 
 -- Parse arguments
 cmd = torch.CmdLine()
@@ -144,8 +144,8 @@ fd:close()
 collectgarbage()
 print("\rNumber of lines processed: "..n)
 
-torch.save('input_text.t7', text)
+torch.save(config.output..'input_text.t7', text)
 text = nil
 collectgarbage()
-torch.save('labels.t7', label)
+torch.save(config.output..'labels.t7', label)
 print("\rProcessing done")
