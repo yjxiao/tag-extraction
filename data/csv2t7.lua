@@ -99,7 +99,7 @@ for line in fd:lines() do
 
    local class = tonumber(content[1])
    if not class then
-      goto continue
+      error("First item is not a number at line "..n)
    end
    if class <= 0 then
       error("Class index smaller than 1 at line "..n)
@@ -118,8 +118,6 @@ for line in fd:lines() do
       io.flush()
       collectgarbage()
    end
-
-   ::continue::
 end
 fd:close()
 collectgarbage()
@@ -132,10 +130,9 @@ for key, val in pairs(count) do
 end
 print("Number of classes: "..max_class)
 for class = 1, max_class do
-   if count[class] == nil or count[class] == 0 then
-      error("The largest class index is "..max_class.." but class "..class.." has no samples.")
+   if count[class] > 1 then
+      error("Number of samples in class "..class..": "..count[class])
    end
-   print("Number of samples in class "..class..": "..count[class])
 end
 print("Number of bytes needed to store content: "..bytecount)
 
