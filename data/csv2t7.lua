@@ -1,6 +1,6 @@
 --[[
-Dataset converter from csv to t7
-Modified from code by Xiang Zhang
+Dataset converter from csv to t7b
+By Xiang Zhang @ New York University
 --]]
 
 require("io")
@@ -8,12 +8,12 @@ require("os")
 require("math")
 require("paths")
 require("torch")
-
+ffi = require("ffi")
 
 -- Configuration table
 config = {}
 config.input = "train.csv"
-config.output = "./"
+config.output = "train.t7b"
 
 -- Parse arguments
 cmd = torch.CmdLine()
@@ -22,8 +22,6 @@ cmd:option("-output", config.output, "Output t7b file")
 params = cmd:parse(arg)
 config.input = params.input
 config.output = params.output
-config.maxwords = 100
-config.excludeCode = true
 
 -- Check file existence
 if not paths.filep(config.input) then
@@ -36,19 +34,6 @@ if paths.filep(config.output) then
       print("Exited because output file "..config.output.." already exists.")
       os.exit()
    end
-end
-
--- truncate the string to maintain only the first k words
-function kthwords(str, num)
-   local k = 0
-   local j = 0
-   for i = 1, num do
-      j, k = string.find(str, '%s+', k+1)
-      if k == nil then
-	 return str
-      end
-   end
-   return str:sub(1, j-1)
 end
 
 -- Parser function for csv
@@ -65,6 +50,9 @@ function ParseCSVLine (line,sep)
 	 local txt = ""
 	 repeat
 	    local startp,endp = string.find(line,'^%b""',pos)
+	    if startp == nil then
+	       print(n..' '..pos)
+	    end
 	    txt = txt..string.sub(line,startp+1,endp-1)
 	    pos = endp + 1
 	    c = string.sub(line,pos,pos) 
@@ -96,65 +84,91 @@ end
 print("--- PASS 1: Checking file format and counting samples ---")
 count = {}
 n = 0
-text = {}
-label = {}
-fd = io.open(config.input, 'r')
+bytecount = 0
+fd = io.open(config.input)
 for line in fd:lines() do
    n = n + 1
    local content = ParseCSVLine(line)
    nitems = nitems or #content
-   if nitems ~= 4 then
-      error("Number of items not equal to 4")
+   if nitems < 2 then
+      error("Number of items smaller than 2. Where is the content?")
    end
    if nitems ~= #content then
       error("Inconsistent number of items at line "..n)
    end
 
-   local index = tonumber(content[1])
-   if not index then
-      goto continue
+   local class = tonumber(content[1])
+   if not class then
+      error("First item is not a number at line "..n)
    end
-   if index <= 0 then
-      error("Index smaller than 1 at line "..n)
+   if class <= 0 then
+      error("Class index smaller than 1 at line "..n)
    end
 
-   local class = content[4]:split(' ')
-   for i = 1, #class do
-      count[class[i]] = count[class[i]] or 0
-      count[class[i]] = count[class[i]] + 1
-   end
-   label[index] = class
+   count[class] = count[class] or 0
+   count[class] = count[class] + 1
 
-   if config.excludeCode then
-      content[3] = content[3]:gsub("<code>.-</code>", ""):gsub("<.->", "")
+   for i = 2, #content do
+      content[i] = content[i]:gsub("\\n", "\n"):gsub("^%s*(.-)%s*$", "%1")
+      bytecount = bytecount + content[i]:len() + 1
    end
-   local input_data = content[2]..' '..content[3]
-   if config.maxwords then
-      input_data = kthwords(input_data, config.maxwords)
-   end
-   text[index] = torch.CharStorage():string(input_data)
 
    if math.fmod(n, 10000) == 0 then
       io.write("\rProcessing line "..n)
       io.flush()
       collectgarbage()
    end
-
-   if math.fmod(n, 3100000) == 0 then
-      torch.save(config.output..'input_text1.t7', text)
-      text = nil
-      collectgarbage()
-      test = {}
+end
+fd:close()
+collectgarbage()
+print("\rNumber of lines processed: "..n)
+max_class = 1
+for key, val in pairs(count) do
+   if key > max_class then
+      max_class = key
    end
+end
+print("Number of classes: "..max_class)
+for class = 1, max_class do
+   if count[class] == nil or count[class] == 0 then
+      error("The largest class index is "..max_class.." but class "..class.." has no samples.")
+   end
+   print("Number of samples in class "..class..": "..count[class])
+end
+print("Number of bytes needed to store content: "..bytecount)
+
+print("\n--- PASS 2: Constructing index and data ---")
+data = {index = {}, length = {}, content = torch.ByteTensor(bytecount)}
+for class = 1, max_class do
+   data.index[class] = torch.LongTensor(nitems - 1)
+   data.length[class] = torch.LongTensor(nitems - 1)
+end
+n = 0
+index = 1
+fd = io.open(config.input)
+for line in fd:lines() do
+   n = n + 1
+   local content = ParseCSVLine(line)
+   local class = tonumber(content[1])
    
-   ::continue::
+   for i = 2, #content do
+      content[i] = content[i]:gsub("\\n", "\n"):gsub("^%s*(.-)%s*$", "%1")
+      data.index[class][i-1] = index
+      data.length[class][i-1] = content[i]:len()
+      ffi.copy(torch.data(data.content:narrow(1, index, content[i]:len() + 1)), content[i])
+      index = index + content[i]:len() + 1
+   end
+
+   if math.fmod(n, 10000) == 0 then
+      io.write("\rProcessing line "..n)
+      io.flush()
+      collectgarbage()
+   end
 end
 fd:close()
 collectgarbage()
 print("\rNumber of lines processed: "..n)
 
-torch.save(config.output..'input_text2.t7', text)
-text = nil
-collectgarbage()
-torch.save(config.output..'labels.t7', label)
-print("\rProcessing done")
+print("Saving to "..config.output)
+torch.save(config.output, data)
+print("Processing done")
