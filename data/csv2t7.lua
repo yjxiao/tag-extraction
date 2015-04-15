@@ -99,7 +99,7 @@ for line in fd:lines() do
 
    local class = tonumber(content[1])
    if not class then
-      error("First item is not a number at line "..n)
+      goto continue
    end
    if class <= 0 then
       error("Class index smaller than 1 at line "..n)
@@ -118,6 +118,8 @@ for line in fd:lines() do
       io.flush()
       collectgarbage()
    end
+
+   ::continue::
 end
 fd:close()
 collectgarbage()
