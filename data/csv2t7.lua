@@ -90,8 +90,8 @@ for line in fd:lines() do
    n = n + 1
    local content = ParseCSVLine(line)
    nitems = nitems or #content
-   if nitems < 2 then
-      error("Number of items smaller than 2. Where is the content?")
+   if nitems ~= 4 then
+      error("Number of items not equal to 4. Where is the content?")
    end
    if nitems ~= #content then
       error("Inconsistent number of items at line "..n)
@@ -132,18 +132,16 @@ for key, val in pairs(count) do
 end
 print("Number of classes: "..max_class)
 for class = 1, max_class do
-   if count[class] > 1 then
+   if count[class] ~= 1 then
       error("Number of samples in class "..class..": "..count[class])
    end
 end
 print("Number of bytes needed to store content: "..bytecount)
 
 print("\n--- PASS 2: Constructing index and data ---")
-data = {index = {}, length = {}, content = torch.ByteTensor(bytecount)}
-for class = 1, max_class do
-   data.index[class] = torch.LongTensor(nitems - 1)
-   data.length[class] = torch.LongTensor(nitems - 1)
-end
+data = {index = torch.LongTensor(max_class, nitems-1),
+	length = torch.LongTensor(max_class, nitems-1),
+	content = torch.ByteTensor(bytecount)}
 n = 0
 index = 1
 fd = io.open(config.input, 'r')
