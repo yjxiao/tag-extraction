@@ -180,10 +180,6 @@ torch.save(config.output, contents)
 contents = nil
 collectgarbage()
 meta_dir = config.output:split('/')
-if #meta_dir == 1 then
-   meta_dir = '.'
-else
-   meta_dir = meta_dir[#meta_dir]
-end
-torch.save(meta_dir..'/'..'train_meta.t7', data)
+meta_dir = config.output:gsub(meta_dir[#meta_dir]:gsub('%.', '%%.'), 'train_meta%.t7')
+torch.save(meta_dir, data)
 print("Processing done")
