@@ -112,7 +112,7 @@ for line in fd:lines() do
 
    local index = tonumber(content[1])
    if not index then
-      error("First item is not a number at line "..n)
+      goto continue
    end
    if index <= 0 then
       error("Index smaller than 1 at line "..n)
@@ -139,6 +139,7 @@ for line in fd:lines() do
       io.flush()
       collectgarbage()
    end
+   ::continue::
 end
 fd:close()
 collectgarbage()
