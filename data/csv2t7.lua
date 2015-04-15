@@ -1,6 +1,6 @@
 --[[
 Dataset converter from csv to t7b
-By Xiang Zhang @ New York University
+Modified from code by Xiang Zhang @ New York University
 --]]
 
 require("io")
@@ -139,15 +139,14 @@ end
 print("Number of bytes needed to store content: "..bytecount)
 
 print("\n--- PASS 2: Constructing index and data ---")
-data = {index = {}, length = {}}
-contents = torch.ByteTensor(bytecount)
+data = {index = {}, length = {}, content = torch.ByteTensor(bytecount)}
 for class = 1, max_class do
    data.index[class] = torch.LongTensor(nitems - 1)
    data.length[class] = torch.LongTensor(nitems - 1)
 end
 n = 0
 index = 1
-fd = io.open(config.input)
+fd = io.open(config.input, 'r')
 for line in fd:lines() do
    n = n + 1
    local content = ParseCSVLine(line)
@@ -160,11 +159,12 @@ for line in fd:lines() do
       content[i] = content[i]:gsub("\\n", "\n"):gsub("^%s*(.-)%s*$", "%1")
       data.index[class][i-1] = index
       data.length[class][i-1] = content[i]:len()
-      ffi.copy(torch.data(contents:narrow(1, index, content[i]:len() + 1)), content[i])
+      ffi.copy(torch.data(data.content:narrow(1, index, content[i]:len() + 1)), content[i])
       index = index + content[i]:len() + 1
    end
+   content = nil
 
-   if math.fmod(n, 10000) == 0 then
+   if math.fmod(n, 5000) == 0 then
       io.write("\rProcessing line "..n)
       io.flush()
       collectgarbage()
@@ -176,10 +176,5 @@ collectgarbage()
 print("\rNumber of lines processed: "..n)
 
 print("Saving to "..config.output)
-torch.save(config.output, contents)
-contents = nil
-collectgarbage()
-meta_dir = config.output:split('/')
-meta_dir = config.output:gsub(meta_dir[#meta_dir]:gsub('%.', '%%.'), 'train_meta%.t7')
-torch.save(meta_dir, data)
+torch.save(config.output, data)
 print("Processing done")
