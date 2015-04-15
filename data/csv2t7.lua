@@ -139,7 +139,8 @@ end
 print("Number of bytes needed to store content: "..bytecount)
 
 print("\n--- PASS 2: Constructing index and data ---")
-data = {index = {}, length = {}, content = torch.ByteTensor(bytecount)}
+data = {index = {}, length = {}}
+contents = torch.ByteTensor(bytecount)
 for class = 1, max_class do
    data.index[class] = torch.LongTensor(nitems - 1)
    data.length[class] = torch.LongTensor(nitems - 1)
@@ -159,7 +160,7 @@ for line in fd:lines() do
       content[i] = content[i]:gsub("\\n", "\n"):gsub("^%s*(.-)%s*$", "%1")
       data.index[class][i-1] = index
       data.length[class][i-1] = content[i]:len()
-      ffi.copy(torch.data(data.content:narrow(1, index, content[i]:len() + 1)), content[i])
+      ffi.copy(torch.data(contents:narrow(1, index, content[i]:len() + 1)), content[i])
       index = index + content[i]:len() + 1
    end
 
@@ -175,5 +176,14 @@ collectgarbage()
 print("\rNumber of lines processed: "..n)
 
 print("Saving to "..config.output)
-torch.save(config.output, data)
+torch.save(config.output, contents)
+contents = nil
+collectgarbage()
+meta_dir = config.output:split('/')
+if #meta_dir == 1 then
+   meta_dir = '.'
+else
+   meta_dir = meta_dir[#meta_dir]
+end
+torch.save(meta_dir..'/'..'train_meta.t7', data)
 print("Processing done")
