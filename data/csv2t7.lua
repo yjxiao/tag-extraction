@@ -132,7 +132,7 @@ for line in fd:lines() do
    if config.maxwords then
       input_data = kthwords(input_data, config.maxwords)
    end
-   text[index] = input_data
+   text[index] = torch.CharStorage():string(input_data)
 
    if math.fmod(n, 10000) == 0 then
       io.write("\rProcessing line "..n)
