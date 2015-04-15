@@ -14,6 +14,7 @@ def convert_raw_data(in_path, out_path):
         if (i + 1) % 1000000 == 0:
             f_dest.flush()
             gc.collect()
+            print 'Processed line {}'.format(i+1)
 
 
 def main(args):
