@@ -151,6 +151,9 @@ for line in fd:lines() do
    n = n + 1
    local content = ParseCSVLine(line)
    local class = tonumber(content[1])
+   if class == nil then
+      goto continue2
+   end
    
    for i = 2, #content do
       content[i] = content[i]:gsub("\\n", "\n"):gsub("^%s*(.-)%s*$", "%1")
@@ -165,6 +168,7 @@ for line in fd:lines() do
       io.flush()
       collectgarbage()
    end
+   ::continue2::
 end
 fd:close()
 collectgarbage()
