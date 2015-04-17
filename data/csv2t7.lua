@@ -12,8 +12,9 @@ ffi = require("ffi")
 
 -- Configuration table
 config = {}
-config.input = "train.csv"
+config.input = "../../Train_m.csv"
 config.output = "train.t7b"
+config.idx_file = "../../idx_1000.txt"
 
 -- Parse arguments
 cmd = torch.CmdLine()
@@ -81,7 +82,19 @@ function ParseCSVLine (line,sep)
    return res
 end
 
+function readIndeces(filename)
+   idx = {}
+   f = io.open(filename)
+   for line in f:lines() do
+      idx[tonumber(line)+1] = 1   -- index start from 1
+   end
+   return idx
+end
+
 print("--- PASS 1: Checking file format and counting samples ---")
+
+local idx = readIndeces(config.idx_file)   -- containing indeces for qualified samples
+
 count = {}
 n = 0
 bytecount = 0
@@ -100,9 +113,10 @@ for line in fd:lines() do
    local class = tonumber(content[1])
    if not class then
       goto continue
-   end
-   if class <= 0 then
+   elseif class <= 0 then
       error("Class index smaller than 1 at line "..n)
+   elseif not idx[class] then
+      goto continue
    end
 
    count[class] = count[class] or 0
@@ -131,11 +145,12 @@ for key, val in pairs(count) do
    end
 end
 print("Number of classes: "..max_class)
-for class = 1, max_class do
+--[[for class = 1, max_class do
    if count[class] ~= 1 then
       error("Number of samples in class "..class..": "..count[class])
    end
 end
+--]]
 print("Number of bytes needed to store content: "..bytecount)
 
 print("\n--- PASS 2: Constructing index and data ---")
@@ -149,8 +164,8 @@ for line in fd:lines() do
    n = n + 1
    local content = ParseCSVLine(line)
    local class = tonumber(content[1])
-   if class == nil then
-      goto continue2
+   if class == nil or idx[class] == nil then
+      goto continue2      
    end
    
    for i = 2, #content do
