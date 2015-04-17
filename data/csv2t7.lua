@@ -100,17 +100,19 @@ function ParseCSVLine (line,sep)
 end
 
 function readIndices(filename)
-   idx = {}
+   local idx = {}
+   local numlines = 0
    f = io.open(filename, 'r')
    for line in f:lines() do
       idx[tonumber(line)+1] = 1   -- index start from 1
+      numlines = numlines + 1
    end
    return idx
 end
 
 print("--- PASS 1: Checking file format and counting samples ---")
 
-idx = readIndices(config.idx_file)   -- containing indeces for qualified samples
+idx, numlines = readIndices(config.idx_file)   -- containing indeces for qualified samples
 
 count = {}
 n = 0
@@ -173,7 +175,8 @@ for key, val in pairs(count) do
 end
 
 print("Number of classes: "..max_class)
-assert(max_class == m and m == #idx) -- sanity check
+assert(max_class == m)
+assert(m == numlines) -- sanity check
 
 for class = 1, max_class do
    if count[class] ~= 1 then
