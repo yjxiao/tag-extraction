@@ -107,7 +107,7 @@ function readIndices(filename)
       idx[tonumber(line)+1] = 1   -- index start from 1
       numlines = numlines + 1
    end
-   return idx
+   return idx, numlines
 end
 
 print("--- PASS 1: Checking file format and counting samples ---")
