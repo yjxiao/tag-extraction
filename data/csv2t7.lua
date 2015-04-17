@@ -20,9 +20,11 @@ config.idx_file = "../../idx_1000.txt"
 cmd = torch.CmdLine()
 cmd:option("-input", config.input, "Input csv file")
 cmd:option("-output", config.output, "Output t7b file")
+cmd:option("-idx", config.idx_file, "Indices for rows to use")
 params = cmd:parse(arg)
 config.input = params.input
 config.output = params.output
+config.idx_file = params.idx_file
 
 -- Check file existence
 if not paths.filep(config.input) then
@@ -84,7 +86,7 @@ end
 
 function readIndeces(filename)
    idx = {}
-   f = io.open(filename)
+   f = io.open(filename, 'r')
    for line in f:lines() do
       idx[tonumber(line)+1] = 1   -- index start from 1
    end
@@ -93,10 +95,11 @@ end
 
 print("--- PASS 1: Checking file format and counting samples ---")
 
-local idx = readIndeces(config.idx_file)   -- containing indeces for qualified samples
+idx = readIndeces(config.idx_file)   -- containing indeces for qualified samples
 
 count = {}
 n = 0
+m = 0
 bytecount = 0
 fd = io.open(config.input)
 for line in fd:lines() do
@@ -109,7 +112,7 @@ for line in fd:lines() do
    if nitems ~= #content then
       error("Inconsistent number of items at line "..n)
    end
-
+   
    local class = tonumber(content[1])
    if not class then
       goto continue
@@ -118,9 +121,10 @@ for line in fd:lines() do
    elseif not idx[class] then
       goto continue
    end
+   m = m + 1
 
-   count[class] = count[class] or 0
-   count[class] = count[class] + 1
+   count[m] = count[m] or 0
+   count[m] = count[m] + 1
 
    for i = 2, #content do
       content[i] = content[i]:gsub("\\n", "\n"):gsub("^%s*(.-)%s*$", "%1")
@@ -144,13 +148,16 @@ for key, val in pairs(count) do
       max_class = key
    end
 end
+
 print("Number of classes: "..max_class)
---[[for class = 1, max_class do
+assert(max_class == m and m == #idx) -- sanity check
+
+for class = 1, max_class do
    if count[class] ~= 1 then
       error("Number of samples in class "..class..": "..count[class])
    end
 end
---]]
+
 print("Number of bytes needed to store content: "..bytecount)
 
 print("\n--- PASS 2: Constructing index and data ---")
@@ -158,6 +165,7 @@ data = {index = torch.LongTensor(max_class, nitems-1),
 	length = torch.LongTensor(max_class, nitems-1),
 	content = torch.ByteTensor(bytecount)}
 n = 0
+m = 0
 index = 1
 fd = io.open(config.input, 'r')
 for line in fd:lines() do
@@ -167,11 +175,12 @@ for line in fd:lines() do
    if class == nil or idx[class] == nil then
       goto continue2      
    end
+   m = m + 1
    
    for i = 2, #content do
       content[i] = content[i]:gsub("\\n", "\n"):gsub("^%s*(.-)%s*$", "%1")
-      data.index[class][i-1] = index
-      data.length[class][i-1] = content[i]:len()
+      data.index[m][i-1] = index
+      data.length[m][i-1] = content[i]:len()
       ffi.copy(torch.data(data.content:narrow(1, index, content[i]:len() + 1)), content[i])
       index = index + content[i]:len() + 1
    end
