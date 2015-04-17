@@ -25,6 +25,7 @@ params = cmd:parse(arg)
 config.input = params.input
 config.output = params.output
 config.idx_file = params.idx_file
+config.maxwords = 100
 
 -- Check file existence
 if not paths.filep(config.input) then
@@ -37,6 +38,19 @@ if paths.filep(config.output) then
       print("Exited because output file "..config.output.." already exists.")
       os.exit()
    end
+end
+
+-- truncate the string to maintain only the first k words
+function kthwords(str, num)
+   local k = 0
+   local j = 0
+   for i = 1, num do
+      j, k = string.find(str, '%s+', k+1)
+      if k == nil then
+	 return str
+      end
+   end
+   return str:sub(1, j-1)
 end
 
 -- Parser function for csv
@@ -84,7 +98,7 @@ function ParseCSVLine (line,sep)
    return res
 end
 
-function readIndeces(filename)
+function readIndices(filename)
    idx = {}
    f = io.open(filename, 'r')
    for line in f:lines() do
@@ -95,7 +109,7 @@ end
 
 print("--- PASS 1: Checking file format and counting samples ---")
 
-idx = readIndeces(config.idx_file)   -- containing indeces for qualified samples
+idx = readIndices(config.idx_file)   -- containing indeces for qualified samples
 
 count = {}
 n = 0
@@ -127,8 +141,13 @@ for line in fd:lines() do
    count[m] = count[m] + 1
 
    for i = 2, #content do
-      content[i] = content[i]:gsub("\\n", "\n"):gsub("^%s*(.-)%s*$", "%1")
-      bytecount = bytecount + content[i]:len() + 1
+      content[i] = content[i]:gsub("^%s*(.-)%s*$", "%1")
+      if i == 3 then
+	 content[i] = content[i-1]..' '..kthwords(content[i]:gsub("<code>.-</code>", ""):gsub("<.->", ""):gsub("%s+", " "), config.maxwords)
+      end
+      if i ~= 2 then
+	 bytecount = bytecount + content[i]:len() + 1
+      end
    end
 
    if math.fmod(n, 10000) == 0 then
@@ -161,8 +180,8 @@ end
 print("Number of bytes needed to store content: "..bytecount)
 
 print("\n--- PASS 2: Constructing index and data ---")
-data = {index = torch.LongTensor(max_class, nitems-1),
-	length = torch.LongTensor(max_class, nitems-1),
+data = {index = torch.LongTensor(max_class, nitems-2),
+	length = torch.LongTensor(max_class, nitems-2),
 	content = torch.ByteTensor(bytecount)}
 n = 0
 m = 0
@@ -178,11 +197,16 @@ for line in fd:lines() do
    m = m + 1
    
    for i = 2, #content do
-      content[i] = content[i]:gsub("\\n", "\n"):gsub("^%s*(.-)%s*$", "%1")
-      data.index[m][i-1] = index
-      data.length[m][i-1] = content[i]:len()
-      ffi.copy(torch.data(data.content:narrow(1, index, content[i]:len() + 1)), content[i])
-      index = index + content[i]:len() + 1
+      content[i] = content[i]:gsub("^%s*(.-)%s*$", "%1")
+      if i == 3 then
+	 content[i] = content[i-1]..' '..kthwords(content[i]:gsub("<code>.-</code>", ""):gsub("<.->", ""):gsub("%s+", " "), config.maxwords)
+      end
+      if i ~= 2 then
+	 data.index[m][i-2] = index
+	 data.length[m][i-2] = content[i]:len()
+	 ffi.copy(torch.data(data.content:narrow(1, index, content[i]:len() + 1)), content[i])
+	 index = index + content[i]:len() + 1
+      end
    end
    content = nil
 
