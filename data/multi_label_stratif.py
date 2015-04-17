@@ -120,15 +120,22 @@ def multi_label_stratif(labels, num_split=2, p_split=[0.8, 0.2],
     return splits
 
 
+def read_idx(in_file):
+    idx = []
+    with open(in_file, 'rb') as f:
+        for line in f:
+            idx.append(line.strip())
+    return idx
+
+
 def main():
-    with open('annotation_investigator/song_instr.pkl', 'rb') as f:
-        label_mapping = cPickle.load(f)
-    X, y = zip(*label_mapping.items())
-    y = [list(e) for e in y]
-    train_i, test_i = multi_label_stratif(y, rand_state=2345)
-    X = np.array(X, dtype=object)
-    train = X[train_i]
-    test = X[test_i]
+    with open('labelsets_1000.pkl', 'rb') as f:
+        labels = cPickle.load(f)
+    idx = read_idx('idx_1000.txt')
+    train_i, test_i = multi_label_stratif(labels, rand_state=5678)
+    idx = np.array(idx, dtype=object)
+    train = idx[train_i]
+    test = idx[test_i]
     with open('train_songs.txt', 'wb') as f:
         f.write('\n'.join(train))
     with open('test_songs.txt', 'wb') as f:
