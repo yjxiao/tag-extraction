@@ -15,6 +15,7 @@ config = {}
 config.input = "../../Train_m.csv"
 config.output = "train.t7b"
 config.idx_file = "../../idx_1000.txt"
+config.maxwords = 100
 
 -- Parse arguments
 cmd = torch.CmdLine()
@@ -24,8 +25,8 @@ cmd:option("-idx", config.idx_file, "Indices for rows to use")
 params = cmd:parse(arg)
 config.input = params.input
 config.output = params.output
-config.idx_file = params.idx_file
-config.maxwords = 100
+config.idx_file = params.idx
+
 
 -- Check file existence
 if not paths.filep(config.input) then
@@ -50,7 +51,7 @@ function kthwords(str, num)
 	 return str
       end
    end
-   return str:sub(1, j-1)
+   return str:sub(1, j-1):gsub("^%s*(.-)%s*$", "%1")
 end
 
 -- Parser function for csv
@@ -143,7 +144,10 @@ for line in fd:lines() do
    for i = 2, #content do
       content[i] = content[i]:gsub("^%s*(.-)%s*$", "%1")
       if i == 3 then
-	 content[i] = content[i-1]..' '..kthwords(content[i]:gsub("<code>.-</code>", ""):gsub("<.->", ""):gsub("%s+", " "), config.maxwords)
+	 content[i] = content[i-1]..' '..kthwords(content[i]:gsub("<code>.-</code>", "")
+						     :gsub("<.->", ""):gsub("%p", "")
+						     :gsub("%s+", " "), config.maxwords)
+	 content[i] = content[i]:gsub("%p", ""):gsub("%s+", " "):gsub("^%s*(.-)%s*$", "%1")
       end
       if i ~= 2 then
 	 bytecount = bytecount + content[i]:len() + 1
@@ -199,7 +203,10 @@ for line in fd:lines() do
    for i = 2, #content do
       content[i] = content[i]:gsub("^%s*(.-)%s*$", "%1")
       if i == 3 then
-	 content[i] = content[i-1]..' '..kthwords(content[i]:gsub("<code>.-</code>", ""):gsub("<.->", ""):gsub("%s+", " "), config.maxwords)
+	 content[i] = content[i-1]..' '..kthwords(content[i]:gsub("<code>.-</code>", "")
+						     :gsub("<.->", ""):gsub("%p", "")
+						     :gsub("%s+", " "), config.maxwords)
+	 content[i] = content[i]:gsub("%p", ""):gsub("%s+", " "):gsub("^%s*(.-)%s*$", "%1")
       end
       if i ~= 2 then
 	 data.index[m][i-2] = index
