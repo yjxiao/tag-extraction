@@ -131,15 +131,11 @@ def read_idx(in_file):
 def main():
     with open('labelsets_1000.pkl', 'rb') as f:
         labels = cPickle.load(f)
-    idx = read_idx('idx_1000.txt')
     train_i, test_i = multi_label_stratif(labels, rand_state=5678)
-    idx = np.array(idx, dtype=object)
-    train = idx[train_i]
-    test = idx[test_i]
-    with open('train_songs.txt', 'wb') as f:
-        f.write('\n'.join(train))
-    with open('test_songs.txt', 'wb') as f:
-        f.write('\n'.join(test))
+    with open('train.txt', 'wb') as f:
+        f.write('\n'.join(train_i))
+    with open('test.txt', 'wb') as f:
+        f.write('\n'.join(test_i))
 
 
 if __name__ == '__main__':
