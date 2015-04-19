@@ -12,7 +12,7 @@ function read_split(ftrain, ftest)
    f:close()
    f = io.open(ftest, 'r')
    for line in f:lines() do
-      if split[tonumber(line)] then
+      if split[tonumber(line)+1] then
 	 error('duplicate entries in train and test')
       end
       split[tonumber(line)+1] = 2   -- index start from 1
