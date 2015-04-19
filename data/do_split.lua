@@ -30,7 +30,7 @@ split, train_size, test_size = read_split(ftrain, ftest)
 train_index = torch.LongTensor(train_size, 2)
 train_length = torch.LongTensor(train_size, 2)
 test_index = torch.LongTensor(test_size, 2)
-test_length = torch.LongTensor(test_length, 2)
+test_length = torch.LongTensor(test_size, 2)
 
 train_cnt = 0
 test_cnt = 0
