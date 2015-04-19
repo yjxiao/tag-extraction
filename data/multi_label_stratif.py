@@ -133,9 +133,9 @@ def main():
         labels = cPickle.load(f)
     train_i, test_i = multi_label_stratif(labels, rand_state=5678)
     with open('train.txt', 'wb') as f:
-        f.write('\n'.join(train_i))
+        f.write('\n'.join([str(i) for i in train_i]))
     with open('test.txt', 'wb') as f:
-        f.write('\n'.join(test_i))
+        f.write('\n'.join([str(i) for i in test_i]))
 
 
 if __name__ == '__main__':
