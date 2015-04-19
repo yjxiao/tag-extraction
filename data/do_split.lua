@@ -20,6 +20,7 @@ function read_split(ftrain, ftest)
    end
    f:close()
    return split, train_size, test_size
+end
 
 data = torch.load('train.t7')
 ftrain = 'train.txt'
