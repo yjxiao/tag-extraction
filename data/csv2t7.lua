@@ -82,18 +82,18 @@ function ParseCSVLine (line,sep)
    return res
 end
 
-function readIndeces(filename)
+function readIndices(filename)
    idx = {}
    f = io.open(filename)
    for line in f:lines() do
-      idx[tonumber(line)+1] = 1   -- index start from 1
+      idx[tonumber(line)] = 1 
    end
    return idx
 end
 
 print("--- PASS 1: Checking file format and counting samples ---")
 
-local idx = readIndeces(config.idx_file)   -- containing indeces for qualified samples
+local idx = readIndices(config.idx_file)   -- containing indeces for qualified samples
 
 count = {}
 n = 0
