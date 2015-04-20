@@ -2,12 +2,12 @@ require 'torch'   -- torch
 require 'nn'      -- provides all sorts of trainable modules/layers
 require 'cunn'
 
-noutputs = 2150
+noutputs = noutputs or 2150
 batchSize = 16
 
 -- input dimensions
 nfeats = nfeats or 50
-length = 100
+length = length or 100
 ninputs = nfeats*length
 
 -- hidden units, filter sizes (for ConvNet only):

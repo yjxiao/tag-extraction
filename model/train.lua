@@ -31,7 +31,7 @@ print '==> defining training procedure'
 parameters, gradParameters = model:getParameters()
 
 function train()
-   shuffle = torch.randperm(trsize)
+   shuffle = torch.randperm(trainData.size)
 
    -- epoch tracker
    epoch = epoch or 1

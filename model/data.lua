@@ -40,24 +40,29 @@ end
 print '==> loading dataset'
 nfeats = 50
 all_data = torch.load(data_path)
+print '==> loading glove vectors'
 glove_table = load_glove(glove_path, nfeats)
+print '==> loading labels'
 label_table = torch.load(label_path)
+
+noutputs = 2150
+length = 100
 
 trainData = {
    index = all_data.tr_index,
    length = all_data.tr_length,
-   size = #(all_data.tr_index)[1]
+   size = (#all_data.tr_index)[1]
 }
 testData = {
    index = all_data.te_index,
    index = all_data.te_length,
-   size = #(all_data.te_index)[1]
+   size = (#all_data.te_index)[1]
 }
 
 function preprocess_data(content, index, length, wordvector_table, labelvector_table)
     
-    local data = torch.zeros(opt.inputDim, 1, opt.inputLen)
-    local labels = torch.zeros(opt.nClasses)   
+    local data = torch.zeros(nfeats, 1, length)
+    local labels = torch.zeros(noutputs)   
 
     -- standardize to all lowercase
     local document = ffi.string(torch.data(content:narrow(1, index[1], length[1]))):lower()
@@ -68,7 +73,7 @@ function preprocess_data(content, index, length, wordvector_table, labelvector_t
        if wordvector_table[word:gsub("%p+", "")] then
 	  data[{{}, 1, {doc_size}}] = wordvector_table[word:gsub("%p+", "")]
        end
-       if doc_size == opt.inputLen then
+       if doc_size == length then
 	  break
        end
        doc_size = doc_size + 1
