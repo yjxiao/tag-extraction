@@ -46,7 +46,7 @@ print '==> loading labels'
 label_table = torch.load(label_path)
 
 noutputs = 2150
-length = 100
+inlength = 100
 
 trainData = {
    index = all_data.tr_index,
@@ -61,29 +61,29 @@ testData = {
 
 function preprocess_data(content, index, length, wordvector_table, labelvector_table)
     
-    local data = torch.zeros(nfeats, 1, length)
-    local labels = torch.zeros(noutputs)   
+   local data = torch.zeros(nfeats, 1, inlength):float()
+   local labels = torch.zeros(noutputs):float()
 
-    -- standardize to all lowercase
-    local document = ffi.string(torch.data(content:narrow(1, index[1], length[1]))):lower()
+   -- standardize to all lowercase
+   local document = ffi.string(torch.data(content:narrow(1, index[1], length[1]))):lower()
     
-    -- break each review into words and concatenate the vectors
-    local doc_size = 1
-    for word in document:gmatch("%S+") do
-       if wordvector_table[word:gsub("%p+", "")] then
-	  data[{{}, 1, {doc_size}}] = wordvector_table[word:gsub("%p+", "")]
-       end
-       if doc_size == length then
-	  break
-       end
-       doc_size = doc_size + 1
-    end
+   -- break each review into words and concatenate the vectors
+   local doc_size = 1
+   for word in document:gmatch("%S+") do
+      if wordvector_table[word:gsub("%p+", "")] then
+	 data[{{}, 1, {doc_size}}] = wordvector_table[word:gsub("%p+", "")]
+      end
+      if doc_size == inlength then
+	 break
+      end
+      doc_size = doc_size + 1
+   end
 
-    local labelset = ffi.string(torch.data(content:narrow(1, index[2], length[2])))
-    for label in labelset:gmatch("%S+") do
-       labels:add(labelvector_table[label])
-    end
-
-    return data, labels
+   local labelset = ffi.string(torch.data(content:narrow(1, index[2], length[2])))
+   for label in labelset:gmatch("%S+") do
+      labels:add(labelvector_table[label])
+   end
+   
+   return data, labels
 end
 

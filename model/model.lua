@@ -7,8 +7,8 @@ batchSize = 16
 
 -- input dimensions
 nfeats = nfeats or 50
-length = length or 100
-ninputs = nfeats*length
+inlength = inlength or 100
+ninputs = nfeats*inlength
 
 -- hidden units, filter sizes (for ConvNet only):
 nstates = {128,128,128,400}
