@@ -171,8 +171,8 @@ function test()
       xlua.progress(t, testData.size)
       local input
       local target
-      input, target = preprocess_data(all_data.content, trainData.index[shuffle[i]],
-				      trainData.length[shuffle[i]], glove_table, label_table)
+      input, target = preprocess_data(all_data.content, testData.index[t],
+				      testData.length[t], glove_table, label_table)
       if opt.type == 'cuda' then
         input = input:cuda()
         target = target:cuda()

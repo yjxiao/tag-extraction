@@ -55,7 +55,7 @@ trainData = {
 }
 testData = {
    index = all_data.te_index,
-   index = all_data.te_length,
+   length = all_data.te_length,
    size = (#all_data.te_index)[1]
 }
 
