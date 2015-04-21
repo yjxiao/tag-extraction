@@ -81,7 +81,7 @@ function preprocess_data(content, index, length, wordvector_table, labelvector_t
 
    local labelset = ffi.string(torch.data(content:narrow(1, index[2], length[2])))
    for label in labelset:gmatch("%S+") do
-      labels:add(labelvector_table[label])
+      labels:add(labelvector_table[label]:float())
    end
    
    return data, labels

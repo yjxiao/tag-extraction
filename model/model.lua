@@ -15,7 +15,7 @@ nstates = {128,128,128,400}
 filtsize = {4, 5, 4}
 poolsize = {2, 2, 2}
 stridesize = {2, 1, 1}
-viewsize = 33
+viewsize = 39
 
 print '==> construct model'
 
