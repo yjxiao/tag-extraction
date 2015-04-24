@@ -10,7 +10,7 @@ function transform_labels(path, nClasses)
     while line do
 	local label = line:gsub("\n", "")
 	-- perform one-hot encoding for the labels
-	label_table[label] = torch.zeros(nClasses)
+	label_table[label] = torch.zeros(nClasses):float()
 	label_table[label][idx] = 1
 	idx = idx + 1
 	line = label_file:read("*l")
