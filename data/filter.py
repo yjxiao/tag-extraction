@@ -34,7 +34,7 @@ def label_filter(labelsets, threshold=20):
                 break
         else:
             indeces.append(i)
-            q_labels.append(labelsets[i+1])
+            q_labels.append(labelsets[i])
             
     return indeces, q_labels, len(qualified)
             
