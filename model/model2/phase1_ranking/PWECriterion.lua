@@ -8,6 +8,7 @@ end
 
 function PWECriterion:updateOutput(input, target)
    -- BP-MLL, a convex surrogate loss for ranking loss
+   -- from the paper: http://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/tkde06a.pdf
    local lsize = target:sum()
    local nlsize = target:size(1) - lsize
    local mat = torch.zeros(lsize, nlsize):float()
