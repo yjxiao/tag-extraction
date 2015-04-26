@@ -1,3 +1,5 @@
+require 'cunn'
+
 local PWECriterion, parent = torch.class('nn.PWECriterion', 'nn.Criterion')
 
 function PWECriterion:__init()
