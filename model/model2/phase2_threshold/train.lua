@@ -29,6 +29,8 @@ if opt.type == 'cuda' then
    criterion:cuda()
 end
 
+model:evaluate()
+
 print '==> defining training procedure'
 parameters, gradParameters = model_thres:getParameters()
 
@@ -87,7 +89,7 @@ function train()
    -- local vars
    local time = sys.clock()
    -- set model to training mode (for modules that differ in training and testing, like Dropout)
-   model:training()
+   model_thres:training()
 
    local tloss = 0
    local correct = 0
@@ -200,7 +202,7 @@ function test()
    local time = sys.clock()
 
    -- set model to evaluate mode (for modules that differ in training and testing, like Dropout)
-   model:evaluate()
+   model_thres:evaluate()
 
    -- test over test data
    print('==> testing on test set:')
