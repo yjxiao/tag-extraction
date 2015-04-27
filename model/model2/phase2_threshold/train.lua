@@ -188,7 +188,7 @@ function train()
    local filename = paths.concat(save, 'model_thres.net')
    os.execute('mkdir -p ' .. sys.dirname(filename))
    print('==> saving model to '..filename)
-   torch.save(filename, model)
+   torch.save(filename, model_thres)
 
    -- next epoch
    epoch = epoch + 1
