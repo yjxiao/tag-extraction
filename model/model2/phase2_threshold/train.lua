@@ -55,6 +55,10 @@ function get_rank_loss(output, target)
 end
 
 function getOptimalThreshold(input, target)
+   local res = input.new()
+   res:resize(1)
+   input = input:float()
+   target = target:float()
    local y
    local idx
    y, idx = torch.sort(input, 1, true)
@@ -69,8 +73,6 @@ function getOptimalThreshold(input, target)
 	 best_thres = threshold
       end
    end
-   local res = input.new()
-   res:resizeAs(input)
    res[1] = best_thres
    return res
 end
@@ -142,7 +144,7 @@ function train()
                           model_thres:backward(inputs[i], df_do)
 
                           -- update confusion
-			  local temp = output:ge(output_thres):eq(targets[i]:ge(0.5))
+			  local temp = output:ge(output_thres[1]):eq(targets[i]:ge(0.5))
 			  correct = correct + temp:sum()
 			  if temp:sum() == noutputs then
 			     exact_correct = exact_correct + 1
@@ -231,16 +233,16 @@ function test()
       local pred_thres = model_thres:forward(input)
       local loss = criterion:forward(pred_thres, target_thres)
       tloss = tloss + loss
-      local temp = pred:ge(pred_thres):eq(target:ge(0.5))
+      local temp = pred:ge(pred_thres[1]):eq(target:ge(0.5))
       correct = correct + temp:sum()
       if temp:sum() == noutputs then
 	 exact_correct = exact_correct + 1
       end
-      f_mac_tp:add(pred:ge(pred_thres):cmul(target:ge(0.5)):float())
+      f_mac_tp:add(pred:ge(pred_thres[1]):cmul(target:ge(0.5)):float())
       f_mac_pos:add(target:ge(0.5):float())
-      f_mac_pred:add(pred:ge(pred_thres):float())
-      n_tp = n_tp + pred:ge(pred_thres):cmul(target:ge(0.5)):sum()
-      n_pred = n_pred + pred:ge(pred_thres):sum()
+      f_mac_pred:add(pred:ge(pred_thres[1]):float())
+      n_tp = n_tp + pred:ge(pred_thres[1]):cmul(target:ge(0.5)):sum()
+      n_pred = n_pred + pred:ge(pred_thres[1]):sum()
       n_pos = n_pos + target:ge(0.5):sum()
       -- a more agressive modified accuracy as follows:
       -- n_correct = n_correct + present:sum() - pred:ge(0.5):eq(target:le(0.5)):sum()
