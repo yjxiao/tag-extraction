@@ -30,7 +30,7 @@ if opt.type == 'cuda' then
 end
 
 print '==> defining training procedure'
-parameters, gradParameters = model:getParameters()
+parameters, gradParameters = model_thres:getParameters()
 
 function get_rank_loss(output, target)
    local pos = {}
