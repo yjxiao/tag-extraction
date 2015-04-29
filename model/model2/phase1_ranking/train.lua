@@ -31,19 +31,24 @@ print '==> defining training procedure'
 parameters, gradParameters = model:getParameters()
 
 function get_rank_loss(output, target)
-   local lsize = target:sum()
-   local nlsize = target:size(1) - lsize
-   local pos = output[target:ge(0.5)]
-   local neg = output[target:le(0.5)]
+   local pos = {}
+   local neg = {}
    local loss = 0
-   for k = 1, lsize do
-      for kk = 1, nlsize do
-         if pos[k] <= neg[kk] then
-                loss = loss + 1
-         end
+   for k = 1, target:size(1) do
+      if target[k] >= 1 then
+	 table.insert(pos, k)
+      else
+	 table.insert(neg, k)
       end
    end
-   loss = loss / lsize / nlsize
+   for k = 1, #pos do
+      for kk = 1, #neg do
+	 if output[pos[k]] <= output[neg[kk]] then
+	    loss = loss + 1
+	 end
+      end
+   end
+   loss = loss / #pos / #neg
    return loss
 end
 
