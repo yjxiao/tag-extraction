@@ -36,14 +36,14 @@ function get_rank_loss(output, target)
    local loss = 0
    for k = 1, target:size(1) do
       if target[k] >= 1 then
-	 table.insert(pos, k)
+	 table.insert(pos, output[k])
       else
-	 table.insert(neg, k)
+	 table.insert(neg, output[k])
       end
    end
    for k = 1, #pos do
       for kk = 1, #neg do
-	 if output[pos[k]] <= output[neg[kk]] then
+	 if pos[k] <= neg[kk] then
 	    loss = loss + 1
 	 end
       end
