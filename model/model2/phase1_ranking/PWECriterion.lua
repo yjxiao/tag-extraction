@@ -11,14 +11,16 @@ function PWECriterion:updateOutput(input, target)
    -- from the paper: http://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/tkde06a.pdf
    local lsize = target:sum()
    local nlsize = target:size(1) - lsize
-   local mat = torch.zeros(lsize, nlsize):float()
+   local mat = torch.FloatTensor(lsize, nlsize)
    input = input:float()
    target = target:float()
+   local tmp = input[target:le(0.5)]
    for k = 1, mat:size(1) do
-      mat[k]:add(input[target:le(0.5)])
+      mat[k] = tmp
    end
+   tmp = input[target:ge(0.5)]
    for k = 1, mat:size(2) do
-      mat[{{}, k}]:add(-1, input[target:ge(0.5)])
+      mat:select(2, k):add(-1, tmp)
    end
    self.output = mat:exp():sum() / lsize / nlsize
    return self.output
@@ -28,14 +30,16 @@ function PWECriterion:updateGradInput(input, target)
    local temp = input.new()
    local lsize = target:sum()
    local nlsize = target:size(1) - lsize
-   local mat = torch.zeros(lsize, nlsize):float()
+   local mat = torch.FloatTensor(lsize, nlsize)
    input = input:float()
    target = target:float()
+   local tmp = input[target:le(0.5)]
    for k = 1, mat:size(1) do
-      mat[k]:add(input[target:le(0.5)])
+      mat[k] = tmp
    end
+   tmp = input[target:ge(0.5)]
    for k = 1, mat:size(2) do
-      mat[{{}, k}]:add(-1, input[target:ge(0.5)])
+      mat:select(2, k):add(-1, tmp)
    end
    mat = mat:exp() / nlsize / lsize
    self.gradInput = input.new()
