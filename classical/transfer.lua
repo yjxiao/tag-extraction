@@ -54,16 +54,15 @@ function main()
     -- Configuration parameters
     opt = {}
     -- change these to the appropriate data locations
-    opt.dataPath = "/home/xray/courses/nlp/splitted_data.t7"
+    opt.dataPath = "/scratch/yx887/tag-extraction/classical/data/splitted_data.t7"
 
     -- word vector dimensionality
     opt.inputDim = 50 
     opt.inputLen = 100
 
     -- nTrainDocs is the number of documents used in the training set
-    opt.nTrainDocs = 2879603
-    opt.nTestDocs = 720833
-    opt.nClasses = 2150
+    opt.nTrainDocs = 484050
+    opt.nTestDocs = 120990
 
     print("Loading raw data ...")
     local raw_data = torch.load(opt.dataPath)

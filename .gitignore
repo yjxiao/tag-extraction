@@ -1,5 +1,9 @@
 *~
 *.pyc
-**/*.pkl
-**/*.tsv
-**/*.csv
+*.pkl
+*.tsv
+*.csv
+*.mod
+*.q
+*.o*
+*.t7
