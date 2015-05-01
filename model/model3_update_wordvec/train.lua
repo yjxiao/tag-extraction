@@ -131,7 +131,6 @@ function train()
                        gradParameters:div(#inputs)
 		       tloss = tloss + f
                        f = f/#inputs
-                       g_input = g_input / #input
 
                        -- return f and df/dX
                        return f,gradParameters
