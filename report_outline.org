@@ -1,0 +1,19 @@
+* Report Outline
+** Introduction
+- Problem Definition
+- Word embedding and convnet
+** Data
+- Dataset description
+- Glove
+- Preprocessing
+- Train-test split
+- 34 labels and 2150 labels
+** Model
+*** Convnet
+- Model specifications
+- Update word vectors
+*** Traditional method
+- Model specification
+** Experiments
+- Result
+- Discussion
