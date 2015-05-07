@@ -27,8 +27,8 @@ def main(argv):
                 model_dir = "model/2150"
 
     print("Loading test data ...")
-    test_data = load_pickle(data_path("test.pkl", data_dir))
-    test_labels = load_pickle(data_path("test_lb.pkl", data_dir))
+    test_data = load_pickle(data_path("train.pkl", data_dir))
+    test_labels = load_pickle(data_path("train_lb.pkl", data_dir))
 
     print("Loading model ...")
     clf = load_pickle(data_path("ovr_clf.mod", model_dir))
@@ -48,7 +48,7 @@ def main(argv):
 
     print("Done!")
     print("Saving predictions ...")
-    save_pickle(data_path("test_scores.pkl", data_dir), probs)
+    save_pickle(data_path("train_scores.pkl", data_dir), probs)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
