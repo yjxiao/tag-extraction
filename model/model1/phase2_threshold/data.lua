@@ -3,9 +3,9 @@ ffi = require('ffi')
 
 torch.setdefaulttensortype('torch.FloatTensor')
 
-data_path = '/home/glenn/nlpdata/run2/splitted_data.t7'
-glove_path = '/home/glenn/nlpdata/glove.twitter.27B.50d.txt'
-label_path = '/home/glenn/nlpdata/run2/label_table.t7'
+data_path = './splitted_data.t7'
+glove_path = './glove.twitter.27B.50d.txt'
+label_path = './label_table.t7'
 
 function load_glove(path, inputDim)
     

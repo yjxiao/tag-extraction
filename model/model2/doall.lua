@@ -11,10 +11,10 @@ torch.setdefaulttensortype('torch.FloatTensor')
 
 print '==> executing all'
 
-dofile '/home/jq401/nlp/code13_small_update_input/data.lua'
-dofile '/home/jq401/nlp/code13_small_update_input/PWECriterion.lua'
-dofile '/home/jq401/nlp/code13_small_update_input/model.lua'
-dofile '/home/jq401/nlp/code13_small_update_input/train.lua'
+dofile 'data.lua'
+dofile 'PWECriterion.lua'
+dofile 'model.lua'
+dofile 'train.lua'
 
 epoch = 1
 
